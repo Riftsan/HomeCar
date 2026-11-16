@@ -6,30 +6,21 @@ import static me.aap.fermata.util.Utils.dynCtx;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.LayoutInflater;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.inputmethod.EditorInfo;
 import android.webkit.WebView;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -66,6 +57,7 @@ public class WebBrowserFragment extends MainActivityFragment
 	private boolean fullScreenOnResume;
 	private static final String HOMECAR_WEB_STATE = "homecar.webview.state";
 	@Nullable private View retainedHomeCarRoot;
+	@Nullable private HomeCarSettingsSheet settingsSheet;
 
 
 	private static final NavBarMediator HOME_CAR_NAV_BAR = new NavBarMediator() {
@@ -176,9 +168,25 @@ public class WebBrowserFragment extends MainActivityFragment
 			}
 		}
 
-		ImageButton settingsButton =
+		View settingsButton =
 				view.findViewById(R.id.homeCarSettingsButton);
-		ImageButton backButton = view.findViewById(R.id.homeCarBackButton);
+		View backButton = view.findViewById(R.id.homeCarBackButton);
+		ViewCompat.setOnApplyWindowInsetsListener(view, (root, insets) -> {
+			var bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			int margin = Math.round(12 * root.getResources().getDisplayMetrics().density);
+			for (View control : new View[]{settingsButton, backButton}) {
+				if (control == null) continue;
+				var params = (ViewGroup.MarginLayoutParams) control.getLayoutParams();
+				params.bottomMargin = margin + bars.bottom;
+				params.setMarginStart(margin + (root.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
+						? bars.right : bars.left));
+				params.setMarginEnd(margin + (root.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
+						? bars.left : bars.right));
+				control.setLayoutParams(params);
+			}
+			return insets;
+		});
+		ViewCompat.requestApplyInsets(view);
 		if (backButton != null) {
 			backButton.setVisibility(View.GONE);
 			MainActivityDelegate.getActivityDelegate(ctx).onSuccess(a ->
@@ -244,118 +252,25 @@ public class WebBrowserFragment extends MainActivityFragment
 	}
 
 	private void showHomeCarSettings() {
-		WebBrowserAddon addon = getAddon();
-		FermataWebView webView = getWebView();
-
-		if ((addon == null) || (webView == null)) return;
-
-		Context ctx = requireContext();
-
-		EditText input = new EditText(ctx);
-		input.setSingleLine(true);
-		input.setSelectAllOnFocus(true);
-		input.setInputType(
-				InputType.TYPE_CLASS_TEXT |
-				InputType.TYPE_TEXT_VARIATION_URI
-		);
-		input.setText(addon.getHomeUrl());
-		input.setImeOptions(EditorInfo.IME_ACTION_DONE);
-
-		int pad = (int) (20 * ctx.getResources().getDisplayMetrics().density);
-
-		LinearLayout box = new LinearLayout(ctx);
-		box.setOrientation(LinearLayout.VERTICAL);
-		box.setPadding(pad, 0, pad, 0);
-		box.addView(input, new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT));
-
-		Button updateButton = new Button(ctx);
-		updateButton.setText(R.string.home_car_check_updates);
-		box.addView(updateButton, new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT));
-		updateButton.setOnClickListener(v -> HomeCarUpdateChecker.check(requireActivity(), true));
-
-		AlertDialog dialog = new AlertDialog.Builder(ctx)
-				.setTitle(R.string.home_car_server_title)
-				.setMessage(R.string.home_car_server_message)
-				.setView(box)
-				.setNegativeButton(android.R.string.cancel, null)
-				.setNeutralButton(
-						R.string.home_car_server_reset,
-						null
-				)
-				.setPositiveButton(
-						R.string.home_car_server_save,
-						null
-				)
-				.create();
-
-		dialog.setOnShowListener(d -> {
-			int actionColor = 0xFF8AB4F8;
-			dialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(actionColor);
-			dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setTextColor(actionColor);
-			dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(actionColor);
-
-			input.setOnEditorActionListener((v, actionId, event) -> {
-				if ((actionId == EditorInfo.IME_ACTION_DONE)
-						|| (actionId == EditorInfo.IME_ACTION_GO)
-						|| (actionId == EditorInfo.IME_ACTION_SEND)) {
-					dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
-					return true;
-				}
-
-				return false;
-			});
-
-			dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-					.setOnClickListener(v -> {
-						String raw = input.getText().toString().trim();
-
-						if (raw.isEmpty()) {
-							input.setError(
-									ctx.getString(
-											R.string.home_car_server_required
-									)
-							);
-							return;
-						}
-
-						String url =
-								WebBrowserAddon.normalizeHomeUrl(raw);
-
-						addon.setHomeUrl(url);
-						webView.loadUrl(url);
-
-						Toast.makeText(
-								ctx,
-								R.string.home_car_server_saved,
-								Toast.LENGTH_SHORT
-						).show();
-
-						dialog.dismiss();
-					});
-
-			dialog.getButton(DialogInterface.BUTTON_NEUTRAL)
-					.setOnClickListener(v -> {
-						addon.resetHomeUrl();
-						String url = addon.getHomeUrl();
-						input.setText(url);
-						webView.loadUrl(url);
-
-						Toast.makeText(
-								ctx,
-								R.string.home_car_server_reset_done,
-								Toast.LENGTH_SHORT
-						).show();
-
-						dialog.dismiss();
-					});
-		});
-
-		dialog.show();
-	}
+        WebBrowserAddon addon = getAddon();
+        FermataWebView webView = getWebView();
+        if (addon == null || webView == null || !isAdded()) return;
+        // Guard at the action boundary as well as hiding the entry point in the car.
+        MainActivityDelegate.getActivityDelegate(requireContext()).onSuccess(delegate -> {
+            if (!isAdded() || getWebView() != webView || delegate.isCarActivityNotMirror()
+                    || !(delegate.getAppActivity() instanceof Activity phoneActivity)) return;
+            if (settingsSheet != null && settingsSheet.isShowing()) return;
+            settingsSheet = new HomeCarSettingsSheet(phoneActivity, addon.getHomeUrl(), webView.getUrl(),
+                    url -> {
+                        if (!isAdded() || getWebView() != webView) return;
+                        addon.setHomeUrl(url);
+                        webView.loadUrl(url);
+                    }, () -> {
+                        if (isAdded() && getWebView() == webView) webView.reload();
+                    });
+            settingsSheet.show();
+        });
+    }
 
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -375,6 +290,10 @@ public class WebBrowserFragment extends MainActivityFragment
 
 	@Override
 	public void onDestroyView() {
+		if (settingsSheet != null) {
+			settingsSheet.dismiss();
+			settingsSheet = null;
+		}
 		MainActivityDelegate
 				.getActivityDelegate(requireContext())
 				.onSuccess(this::unregisterListeners);

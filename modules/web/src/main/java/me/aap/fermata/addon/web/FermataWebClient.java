@@ -4,13 +4,11 @@ import static me.aap.utils.ui.activity.ActivityListener.FRAGMENT_CONTENT_CHANGED
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.security.KeyChain;
+import android.net.http.SslError;
 import android.webkit.ClientCertRequest;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 import android.net.Uri;
 import android.webkit.WebResourceRequest;
 
@@ -20,6 +18,7 @@ import androidx.webkit.WebViewClientCompat;
 import androidx.webkit.WebViewFeature;
 
 import me.aap.fermata.addon.web.yt.YoutubeFragment;
+import me.aap.fermata.security.ClientCertificateManager;
 import me.aap.fermata.ui.activity.MainActivityDelegate;
 import me.aap.utils.async.Completed;
 import me.aap.utils.async.FutureSupplier;
@@ -33,8 +32,6 @@ import me.aap.utils.log.Log;
 public class FermataWebClient extends WebViewClientCompat {
 	BooleanConsumer loading;
 
-	private static final String TLS_PREFS = "homecar_client_cert";
-
 	@Override
 	public void onReceivedClientCertRequest(WebView view, ClientCertRequest request) {
 		if (!(view instanceof FermataWebView browser)) {
@@ -46,60 +43,17 @@ public class FermataWebClient extends WebViewClientCompat {
 			request.ignore();
 			return;
 		}
-		Uri configured = Uri.parse(addon.getHomeUrl());
-		String host = request.getHost();
-		int port = request.getPort();
-		if (!"https".equalsIgnoreCase(configured.getScheme()) || host == null ||
-				configured.getHost() == null ||
-				!host.equalsIgnoreCase(configured.getHost()) ||
-				port != ((configured.getPort() == -1) ? 443 : configured.getPort())) {
-			request.ignore();
-			return;
-		}
-
 		Context ctx = view.getContext();
-		SharedPreferences prefs = ctx.getSharedPreferences(TLS_PREFS, Context.MODE_PRIVATE);
-		String key = host.toLowerCase(java.util.Locale.ROOT) + ":" + port;
-		String savedAlias = prefs.getString(key, null);
 		MainActivityDelegate a = MainActivityDelegate.getActivityDelegate(ctx).peek();
-		if (a != null && a.getAppActivity() instanceof Activity phoneActivity &&
-				!a.isCarActivityNotMirror()) {
-			// KeyChain performs explicit user selection/authorization on the phone.
-			KeyChain.choosePrivateKeyAlias(phoneActivity, alias -> {
-				if (alias == null) {
-					request.ignore();
-					return;
-				}
-				prefs.edit().putString(key, alias).apply();
-				provideClientCertificate(ctx, request, alias);
-			}, request.getKeyTypes(), request.getPrincipals(),
-					Uri.parse("https://" + host + ":" + port), savedAlias);
-		} else if (savedAlias != null) {
-			// The projected CarActivity cannot show the phone KeyChain picker.
-			provideClientCertificate(ctx, request, savedAlias);
-		} else {
-			Log.w("No mTLS client certificate authorized. Open HomeCar on the phone first.");
-			request.ignore();
-		}
+		Activity phoneActivity = a != null && !a.isCarActivityNotMirror() &&
+				a.getAppActivity() instanceof Activity activity ? activity : null;
+		ClientCertificateManager.respond(view, addon.getHomeUrl(), request, phoneActivity);
 	}
 
-	private static void provideClientCertificate(Context ctx, ClientCertRequest request,
-			String alias) {
-		new Thread(() -> {
-			try {
-				PrivateKey key = KeyChain.getPrivateKey(ctx, alias);
-				X509Certificate[] chain = KeyChain.getCertificateChain(ctx, alias);
-				if (key == null || chain == null || chain.length == 0) {
-					Log.w("Configured mTLS client certificate is unavailable");
-					request.ignore();
-				} else {
-					request.proceed(key, chain);
-				}
-			} catch (Exception ex) {
-				Log.e(ex, "Failed to access authorized mTLS certificate");
-				request.ignore();
-			}
-		}, "HomeCar-KeyChain").start();
+	@Override
+	public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+		// Client authentication never weakens verification of the server's identity.
+		handler.cancel();
 	}
 
 	@Override
@@ -140,7 +94,7 @@ public class FermataWebClient extends WebViewClientCompat {
 		if ((scheme == null)
 				|| (!"http".equalsIgnoreCase(scheme)
 				&& !"https".equalsIgnoreCase(scheme))) {
-			Log.w("Blocked WebView navigation: " + target);
+			Log.w("Blocked WebView navigation with an unsupported scheme");
 			return true;
 		}
 
@@ -177,8 +131,8 @@ public class FermataWebClient extends WebViewClientCompat {
 								@NonNull WebResourceRequest request,
 								@NonNull WebResourceErrorCompat error) {
 		if (WebViewFeature.isFeatureSupported(
-				WebViewFeature.WEB_RESOURCE_ERROR_GET_DESCRIPTION)) {
-			Log.e("Web error received: " + error.getDescription());
+				WebViewFeature.WEB_RESOURCE_ERROR_GET_CODE)) {
+			Log.e("Web error received: " + error.getErrorCode());
 		} else {
 			Log.e("Web error received");
 		}

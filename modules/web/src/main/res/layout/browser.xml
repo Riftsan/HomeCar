@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -16,40 +17,53 @@
 
     <!-- Always available in Android Auto: back in WebView history, or exit
          the HomeCar surface when there is no previous page. -->
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/homeCarBackButton"
-        android:layout_width="46dp"
-        android:layout_height="46dp"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:theme="@style/Theme.HomeCar.Settings"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="start|bottom"
         android:layout_marginStart="12dp"
         android:layout_marginBottom="12dp"
-        android:alpha="0.75"
-        android:background="@drawable/home_car_settings_button"
         android:contentDescription="@string/home_car_back_or_exit"
-        android:elevation="12dp"
-        android:padding="11dp"
-        android:src="@android:drawable/ic_media_previous"
-        android:tint="#FFFFFF"
+        android:elevation="6dp"
+        android:padding="16dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:minWidth="56dp"
+        android:minHeight="56dp"
+        app:cornerRadius="18dp"
+        app:icon="@drawable/home_car_back"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
         android:visibility="gone" />
 
     <!--
         HOME CAR server configuration.
-        Small, semi-transparent button so it remains available without
-        taking over the Home Assistant dashboard.
+        Phone-only native settings. Hidden until the Activity delegate
+        confirms that this is not a projected car surface.
     -->
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/homeCarSettingsButton"
-        android:layout_width="46dp"
-        android:layout_height="46dp"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:theme="@style/Theme.HomeCar.Settings"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="end|bottom"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="12dp"
-        android:alpha="0.72"
-        android:background="@drawable/home_car_settings_button"
         android:contentDescription="@string/home_car_server_settings"
-        android:elevation="12dp"
-        android:padding="11dp"
-        android:src="@drawable/home_car_settings"
-        android:tint="#FFFFFF" />
+        android:elevation="6dp"
+        android:padding="16dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:minWidth="56dp"
+        android:minHeight="56dp"
+        app:cornerRadius="18dp"
+        app:icon="@drawable/home_car_settings"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        android:visibility="gone" />
 
 </FrameLayout>

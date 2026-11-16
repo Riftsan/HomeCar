@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
+    <!-- KeyChain grants belong to this device and must be selected again after restore. -->
+    <exclude domain="sharedpref" path="homecar_client_cert_v2.xml" />
     <exclude
         domain="sharedpref"
         path="folders.xml" />

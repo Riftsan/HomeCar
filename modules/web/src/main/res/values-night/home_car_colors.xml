@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="home_car_primary">#81D5CD</color>
+    <color name="home_car_on_primary">#003733</color>
+    <color name="home_car_primary_container">#00504B</color>
+    <color name="home_car_on_primary_container">#9DF2E9</color>
+    <color name="home_car_surface">#0E1513</color>
+    <color name="home_car_on_surface">#DDE4E0</color>
+    <color name="home_car_surface_variant">#3F4946</color>
+    <color name="home_car_on_surface_variant">#BEC9C5</color>
+    <color name="home_car_outline">#88938E</color>
+    <color name="home_car_outline_variant">#3F4946</color>
+</resources>

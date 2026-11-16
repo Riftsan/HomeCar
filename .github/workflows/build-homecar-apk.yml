@@ -1,16 +1,22 @@
-﻿name: Build HomeCar APK
+name: Build HomeCar
 
 on:
   push:
+    branches: [main, 'feature/**']
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: homecar-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
 
     steps:
@@ -22,38 +28,65 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - uses: android-actions/setup-android@v3
+      - name: Verify hosted Android SDK
+        run: |
+          test -f "$ANDROID_HOME/platforms/android-36/android.jar"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          test -d "$ANDROID_HOME/ndk/29.0.14206865"
 
-      - name: Install Android SDK
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-
-      - name: Build Android Auto bundle
+      - name: Unit tests
         run: |
           chmod +x ./gradlew
-          ./gradlew :fermata:bundleAutoDebug --no-daemon
+          ./gradlew :fermata:testAutoDebugUnitTest :web:testAutoDebugUnitTest --no-daemon
+
+      - name: Android Lint
+        run: ./gradlew :fermata:lintAutoRelease :web:lintAutoRelease --no-daemon
+
+      - name: Build unsigned Android Auto release bundle
+        run: ./gradlew :fermata:bundleAutoRelease --no-daemon
 
       - name: Generate universal APK
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p dist
-          AAB="$(find fermata/build/outputs/bundle -type f -name '*.aab' -path '*autoDebug*' -print -quit)"
+          AAB="$(find fermata/build/outputs/bundle -type f -name '*.aab' -path '*autoRelease*' -print -quit)"
           test -n "$AAB"
+          cp "$AAB" dist/HomeCar-release.aab
 
           curl -fL --retry 5 \
             -o /tmp/bundletool.jar \
             https://github.com/google/bundletool/releases/download/1.18.2/bundletool-all-1.18.2.jar
 
+          echo '378b5434cd1378bef6b2bc527b8c7f0ff2584b273830335bce54d6d0813c8584  /tmp/bundletool.jar' | sha256sum --check
+          java -jar /tmp/bundletool.jar validate --bundle="$AAB"
+          java -jar /tmp/bundletool.jar dump manifest --bundle="$AAB" --module=web > /tmp/web-manifest.xml
+          python3 -c 'import xml.etree.ElementTree as ET; root = ET.parse("/tmp/web-manifest.xml"); ns = "{http://schemas.android.com/apk/distribution}"; fusing = root.find(".//" + ns + "fusing"); assert fusing is not None and fusing.get(ns + "include") == "true", "The web feature must be fused into the universal APK"'
+
+          # Bundletool uses a temporary debug signature for transport only.
+          # The private persistent signing key stays on the owner's workstation.
           java -jar /tmp/bundletool.jar build-apks \
             --bundle="$AAB" \
             --output=/tmp/homecar.apks \
             --mode=universal
 
-          unzip -p /tmp/homecar.apks universal.apk > dist/HomeCar-Auto.apk
-          test -s dist/HomeCar-Auto.apk
+          unzip -p /tmp/homecar.apks universal.apk > dist/HomeCar-intermediate.apk
+          test -s dist/HomeCar-intermediate.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/HomeCar-intermediate.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging dist/HomeCar-intermediate.apk > dist/apk-metadata.txt
+          sha256sum dist/HomeCar-release.aab dist/HomeCar-intermediate.apk > dist/build-sha256.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: HomeCar-Auto-APK
-          path: dist/HomeCar-Auto.apk
+          name: HomeCar-release-build
+          path: dist/
           if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: HomeCar-check-reports
+          path: |
+            fermata/build/reports/
+            modules/web/build/reports/
+          if-no-files-found: ignore

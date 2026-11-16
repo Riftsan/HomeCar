@@ -18,6 +18,7 @@ import me.aap.fermata.FermataApplication;
 import me.aap.fermata.addon.AddonInfo;
 import me.aap.fermata.addon.FermataAddon;
 import me.aap.fermata.addon.FermataFragmentAddon;
+import me.aap.fermata.security.ClientCertificateOrigin;
 import me.aap.fermata.ui.activity.MainActivityPrefs;
 import me.aap.utils.app.App;
 import me.aap.utils.function.BooleanSupplier;
@@ -370,22 +371,12 @@ public class WebBrowserAddon implements FermataFragmentAddon, SharedPreferenceSt
 	 */
 	static String normalizeHomeUrl(String url) {
 		if (url == null) return DEFAULT_HOME_URL;
-
 		url = url.trim();
-
-		if (url.isEmpty()) {
-			return DEFAULT_HOME_URL;
-		}
-
-		if (!url.startsWith("http://") && !url.startsWith("https://")) {
-			url = "https://" + url;
-		}
-
-		if (!url.endsWith("/")) {
-			url += "/";
-		}
-
-		return url;
+		if (url.isEmpty()) return DEFAULT_HOME_URL;
+		// Preserve legacy host-only entries, while rejecting invalid stored URLs.
+		if (!url.contains("://")) url = "https://" + url;
+		String normalized = ClientCertificateOrigin.normalizeServerUrl(url);
+		return normalized == null ? DEFAULT_HOME_URL : normalized;
 	}
 }
 

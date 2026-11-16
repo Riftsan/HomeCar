@@ -11,22 +11,9 @@ if (localPropsFile.isFile()) {
     gradle.ext.localProps.load(localPropsFile.newDataInputStream())
 }
 
-if ((gradle.ext.localProps['storeFile'] == null ||
-        !file(gradle.ext.localProps['storeFile']).isFile())) {
-
-    def localProps = gradle.ext.localProps
-
-    localProps.putIfAbsent('storeFile', "${rootDir}/res/fermata.jks".toString())
-    localProps.putIfAbsent('keyAlias', 'fermata')
-    localProps.putIfAbsent('keyPassword', 'fermata')
-    localProps.putIfAbsent('storePassword', localProps['keyPassword'])
-
-    apply from: "${rootDir}/res/build_jks.gradle"
-
-    localPropsFile.withOutputStream { out ->
-        localProps.store(out, null)
-    }
-}
+// Release bundles are deliberately unsigned. Sign the universal APK outside the
+// build tree with a private, persistent key. Debug builds use the Android
+// Gradle plugin's normal per-workstation debug key.
 
 rootProject.name = 'Home Car'
 

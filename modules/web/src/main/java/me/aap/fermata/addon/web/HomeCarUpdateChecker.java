@@ -7,7 +7,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
-import androidx.appcompat.app.AlertDialog;
+import android.widget.Toast;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import me.aap.fermata.ui.activity.MainActivityDelegate;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,14 +38,13 @@ import me.aap.fermata.BuildConfig;
  */
 public final class HomeCarUpdateChecker {
     private static final String API =
-            "https://api.github.com/repos/RenanEspinar/HomeCar/releases?per_page=20";
+            "https://api.github.com/repos/Riftsan/HomeCar/releases?per_page=20";
     private static final String RELEASE_URL_PREFIX =
-            "https://github.com/RenanEspinar/HomeCar/releases/";
+            "https://github.com/Riftsan/HomeCar/releases/";
     private static final long INTERVAL_MS = 24L * 60 * 60 * 1000;
     private static final int TIMEOUT_MS = 8000;
     private static final String PREFS = "homecar_update_check";
     private static final String LAST_CHECK = "last_successful_check";
-    private static final String LAST_NOTIFIED = "last_notified_version";
     private static final Pattern VERSION = Pattern.compile(
             "^v?(\\d+)\\.(\\d+)\\.(\\d+)(?:[-+]([a-zA-Z0-9.\\-]+))?$"
     );
@@ -51,6 +54,13 @@ public final class HomeCarUpdateChecker {
 
     public static void check(Activity activity, boolean manual) {
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+        MainActivityDelegate.getActivityDelegate(activity).onSuccess(delegate -> {
+            if (!delegate.isCarActivityNotMirror()) checkOnPhone(activity, manual);
+        });
+    }
+
+    private static void checkOnPhone(Activity activity, boolean manual) {
+        if (activity.isFinishing() || activity.isDestroyed()) return;
         Context app = activity.getApplicationContext();
         SharedPreferences prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         long now = System.currentTimeMillis();
@@ -58,6 +68,7 @@ public final class HomeCarUpdateChecker {
         // Guard against clock changes as well as the ordinary 24-hour limit.
         if (!manual && last > 0 && now >= last && (now - last) < INTERVAL_MS) return;
         if (!RUNNING.compareAndSet(false, true)) return;
+        if (manual) Toast.makeText(activity, R.string.home_car_update_checking, Toast.LENGTH_SHORT).show();
 
         final String current = BuildConfig.VERSION_NAME;
         Thread worker = new Thread(() -> {
@@ -68,40 +79,36 @@ public final class HomeCarUpdateChecker {
                         System.currentTimeMillis()).apply();
                 if (activity.isFinishing() || activity.isDestroyed()) return;
 
+                // Background checks update the check time only; never interrupt a dashboard session.
+                if (!manual) return;
                 if (!result.success) {
-                    if (manual) message(activity, "Actualizaciones de HomeCar",
-                            "No se pudo consultar GitHub: " + result.error);
+                    message(activity, R.string.home_car_update_title,
+                            activity.getString(R.string.home_car_update_failed, result.error));
                     return;
                 }
                 if (result.tag == null) {
-                    if (manual) message(activity, "Actualizaciones de HomeCar",
-                            "Aún no hay versiones publicadas en GitHub Releases.");
+                    message(activity, R.string.home_car_update_title,
+                            activity.getString(R.string.home_car_update_no_releases));
                     return;
                 }
                 if (!result.newer) {
-                    if (manual) message(activity, "HomeCar actualizado",
-                            "Versión instalada: " + current + "\nÚltima versión publicada: "
-                                    + result.tag + "\n\nNo hay actualizaciones disponibles.");
+                    message(activity, R.string.home_car_update_current,
+                            activity.getString(R.string.home_car_update_versions, current, result.tag));
                     return;
                 }
 
-                if (!manual && result.tag.equals(prefs.getString(LAST_NOTIFIED, ""))) return;
-                prefs.edit().putString(LAST_NOTIFIED, result.tag).apply();
-
                 final String url = result.url;
-                new AlertDialog.Builder(activity)
-                        .setTitle("Nueva versión de HomeCar")
-                        .setMessage("Instalada: " + current + "\nDisponible: " + result.tag
-                                + "\n\nPuedes revisar los cambios y descargarla desde GitHub. "
-                                + "HomeCar no instala APK automáticamente.")
+                new MaterialAlertDialogBuilder(HomeCarSettingsSheet.themedContext(activity))
+                        .setTitle(R.string.home_car_update_available)
+                        .setMessage(activity.getString(R.string.home_car_update_message, current, result.tag))
                         .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton("Ver en GitHub", (d, which) -> {
+                        .setPositiveButton(R.string.home_car_update_open, (d, which) -> {
                             if (url == null || !url.startsWith(RELEASE_URL_PREFIX)) return;
                             try {
                                 activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
                             } catch (ActivityNotFoundException ignored) {
-                                message(activity, "Actualizaciones de HomeCar",
-                                        "No se encontró un navegador para abrir GitHub.");
+                                message(activity, R.string.home_car_update_title,
+                                        activity.getString(R.string.home_car_update_no_browser));
                             }
                         }).show();
             });
@@ -129,7 +136,7 @@ public final class HomeCarUpdateChecker {
                 byte[] buf = new byte[8192];
                 int len;
                 while ((len = stream.read(buf)) != -1) {
-                    if (bytes.size() + len > 512 * 1024) return Result.fail("Respuesta demasiado grande");
+                    if (bytes.size() + len > 512 * 1024) return Result.fail("Response too large");
                     bytes.write(buf, 0, len);
                 }
             }
@@ -197,9 +204,9 @@ public final class HomeCarUpdateChecker {
         return 0;
     }
 
-    private static void message(Activity activity, String title, String description) {
+    private static void message(Activity activity, int title, String description) {
         if (!activity.isFinishing() && !activity.isDestroyed())
-            new AlertDialog.Builder(activity).setTitle(title)
+            new MaterialAlertDialogBuilder(HomeCarSettingsSheet.themedContext(activity)).setTitle(title)
                     .setMessage(description).setPositiveButton(android.R.string.ok, null).show();
     }
 
