@@ -228,18 +228,18 @@ final class HomeCarSettingsSheet {
                         && result.expiresAtMillis - System.currentTimeMillis() <= 30L * 24 * 60 * 60 * 1000;
                 certificateStatus.setText(expiresSoon ? R.string.home_car_certificate_expires_soon
                         : R.string.home_car_certificate_ready);
-                certificateStatus.setTextColor(color(com.google.android.material.R.attr.colorPrimary));
+                certificateStatus.setTextColor(color(androidx.appcompat.R.attr.colorPrimary));
                 certificateDescription.setText(expiresSoon ? R.string.home_car_certificate_renew_description
                         : R.string.home_car_certificate_ready_description);
                 break;
             case EXPIRED:
                 certificateStatus.setText(R.string.home_car_certificate_expired);
-                certificateStatus.setTextColor(color(com.google.android.material.R.attr.colorError));
+                certificateStatus.setTextColor(color(androidx.appcompat.R.attr.colorError));
                 certificateDescription.setText(R.string.home_car_certificate_expired_description);
                 break;
             case UNAVAILABLE:
                 certificateStatus.setText(R.string.home_car_certificate_unavailable);
-                certificateStatus.setTextColor(color(com.google.android.material.R.attr.colorError));
+                certificateStatus.setTextColor(color(androidx.appcompat.R.attr.colorError));
                 certificateDescription.setText(R.string.home_car_certificate_unavailable_description);
                 break;
             default:
