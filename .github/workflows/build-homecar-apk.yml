@@ -161,17 +161,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p smoke-artifacts
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/homecar-avds"
+          mkdir -p "$ANDROID_AVD_HOME"
           # Use the hosted runner's accepted SDK licenses; never answer a new license prompt.
           SDK_TOOLS="$ANDROID_HOME/cmdline-tools/latest/bin"
           test -x "$SDK_TOOLS/sdkmanager"
           test -x "$ANDROID_HOME/platform-tools/adb"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           timeout 300 "$SDK_TOOLS/sdkmanager" "emulator" "system-images;android-36;google_apis;x86_64" < /dev/null
-          printf 'no\n' | "$SDK_TOOLS/avdmanager" create avd --name HomeCarSmoke --package "system-images;android-36;google_apis;x86_64" --device pixel_6
+          printf 'no\n' | "$SDK_TOOLS/avdmanager" create avd --name HomeCarSmoke --path "$ANDROID_AVD_HOME/HomeCarSmoke.avd" --package "system-images;android-36;google_apis;x86_64" --device pixel_6
+          "$ANDROID_HOME/emulator/emulator" -list-avds | tee smoke-artifacts/available-avds.txt
+          grep -Fxq HomeCarSmoke smoke-artifacts/available-avds.txt
           test -e /dev/kvm
           sudo setfacl -m "u:$(id -un):rw" /dev/kvm
-          mkdir -p smoke-artifacts
           "$ANDROID_HOME/emulator/emulator" -avd HomeCarSmoke -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -accel on -camera-back none -camera-front none > smoke-artifacts/emulator.log 2>&1 &
+          EMULATOR_PID=$!
+          sleep 3
+          if ! kill -0 "$EMULATOR_PID"; then
+            cat smoke-artifacts/emulator.log
+            exit 1
+          fi
 
       - name: Verify release settings in light, dark, and large-font modes
         run: python3 scripts/emulator-smoke.py dist/HomeCar-intermediate.apk
