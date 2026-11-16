@@ -39,11 +39,6 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :fermata:testAutoDebugUnitTest :web:testAutoDebugUnitTest --no-daemon
 
-      - name: Android Lint
-        timeout-minutes: 15
-        # The base app's lint task also analyzes and reports dynamic-feature issues.
-        run: bash scripts/run-android-lint.sh
-
       - name: Build unsigned Android Auto release bundle
         run: ./gradlew :fermata:bundleAutoRelease --no-daemon
 
@@ -93,6 +88,40 @@ jobs:
             fermata/build/test-results/
             modules/web/build/reports/
             modules/web/build/test-results/
+          if-no-files-found: ignore
+
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Verify hosted Android SDK
+        run: |
+          test -f "$ANDROID_HOME/platforms/android-36/android.jar"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          test -d "$ANDROID_HOME/ndk/29.0.14206865"
+
+      - name: Android Lint
+        timeout-minutes: 15
+        # The base app's lint task also analyzes and reports dynamic-feature issues.
+        run: |
+          chmod +x ./gradlew
+          bash scripts/run-android-lint.sh
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: HomeCar-lint-reports
+          path: |
+            fermata/build/reports/lint-results-*
+            modules/web/build/reports/lint-results-*
           if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v4
