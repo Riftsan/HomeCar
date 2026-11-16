@@ -40,7 +40,8 @@ jobs:
           ./gradlew :fermata:testAutoDebugUnitTest :web:testAutoDebugUnitTest --no-daemon
 
       - name: Android Lint
-        run: ./gradlew :fermata:lintAutoRelease :web:lintAutoRelease --no-daemon
+        # The base app's lint task also analyzes and reports dynamic-feature issues.
+        run: ./gradlew :fermata:lintAutoRelease --no-daemon
 
       - name: Build unsigned Android Auto release bundle
         run: ./gradlew :fermata:bundleAutoRelease --no-daemon
