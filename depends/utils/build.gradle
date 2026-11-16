@@ -21,6 +21,14 @@ android {
     namespace = "me.aap.utils"
     compileSdk SDK_COMPILE_VERSION
 
+    lint {
+        // Lint 32.2.1's interprocedural inference spins in recursive generic types here.
+        // Retain the separately registered annotation checker in this legacy library;
+        // the app and web feature keep the default inference check.
+        disable += ['ThreadConstraint']
+        enable += ['WrongThread']
+    }
+
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 35
