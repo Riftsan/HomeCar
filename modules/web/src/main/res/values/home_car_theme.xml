@@ -2,6 +2,8 @@
 <resources>
     <!-- Scoped to HomeCar controls; the embedded dashboard keeps its own theme. -->
     <style name="Theme.HomeCar.Settings" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Reset inherited tint alpha; Material selectors retain their explicit disabled alpha. -->
+        <item name="alpha">1</item>
         <item name="colorPrimary">@color/home_car_primary</item>
         <item name="colorOnPrimary">@color/home_car_on_primary</item>
         <item name="colorPrimaryContainer">@color/home_car_primary_container</item>

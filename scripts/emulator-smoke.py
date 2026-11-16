@@ -69,6 +69,18 @@ def wait_for_id(resource_id):
     deadline = time.monotonic() + 45
     while time.monotonic() < deadline:
         xml = hierarchy()
+        # Android's one-time immersive-mode education can cover the dashboard.
+        # Dismiss only this observed SystemUI tip, never arbitrary app dialogs.
+        nodes = list(ET.fromstring(xml).iter("node"))
+        tip = any(node.get("resource-id") == "com.android.systemui:id/immersive_cling_title"
+                  for node in nodes)
+        if tip:
+            button = next((node for node in nodes
+                           if node.get("resource-id") == "com.android.systemui:id/ok"), None)
+            if button is not None:
+                left, top, right, bottom = bounds(button)
+                adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
+                continue
         node = find_id(xml, resource_id)
         if node is not None:
             return xml, node

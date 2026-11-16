@@ -10,6 +10,8 @@ The intermediate APK has a temporary transport signature. It is **not** the inst
 
 A dependent emulator job installs that release-mode universal APK on a disposable Android API 36 emulator. It opens settings in light, dark, and 150% font modes, checks that actions remain reachable, captures screenshots, and fails on app crashes. This tests native layout inflation and packaging. It does not install the app on the owner's phone or exercise a real client certificate.
 
+For test-harness or documentation changes only, manual workflow dispatch accepts an optional `build_run` to repeat emulator checks against an existing artifact. It verifies successful build/lint jobs in this repository, checks that application sources have not changed, verifies artifact checksums, and records both source and smoke-test commits. Any application or resource change requires a full build.
+
 ## Private signing identity
 
 The helper stores the encrypted PKCS12 keystore outside the repository under `%LOCALAPPDATA%\HomeCarBuild\signing`. Its random password is protected by Windows DPAPI for the current user. The directory permits only that user and SYSTEM. The helper refuses to overwrite an existing identity or output APK.
