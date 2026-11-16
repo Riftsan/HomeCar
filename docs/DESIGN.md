@@ -4,6 +4,8 @@ The phone setup uses Google's native Material Components for Android with a scop
 
 The implementation retains the Java/XML architecture. Material Components for Views is in maintenance; a full Compose migration would be a separate architectural change. The scoped theme avoids restyling inherited media and projection screens unintentionally.
 
+The implemented screens were rendered and checked on an Android API 36 emulator: [light mode](images/homecar-settings-light.png), [dark mode](images/homecar-settings-dark.png), and [150% text](images/homecar-settings-large-text.png). The settings controls remained reachable and no app crash was recorded. These are native app captures; actual phone and head-unit checks remain separate.
+
 ## Design decisions
 
 - Tonal surfaces, restrained teal accents, rounded cards, and semantic text/icon states in both themes.

@@ -19,6 +19,10 @@ HomeCar displays a configurable Home Assistant dashboard in a dedicated Android 
 
 This is a fork of [RenanEspinar/HomeCar](https://github.com/RenanEspinar/HomeCar). See [certificate behavior and device checks](docs/CLIENT_CERTIFICATES.md), [design decisions and consultation](docs/DESIGN.md), and [release build/signing](docs/RELEASE_BUILD.md).
 
+Native settings on an Android API 36 emulator, in light and dark mode:
+
+<p><img src="docs/images/homecar-settings-light.png" width="280" alt="HomeCar Material 3 settings in light mode"> <img src="docs/images/homecar-settings-dark.png" width="280" alt="HomeCar Material 3 settings in dark mode"></p>
+
 ## What HomeCar provides
 
 - A dedicated Home Assistant WebView with configurable server URL (HTTPS domain or local HTTP address).
