@@ -32,8 +32,23 @@ def wait_for_boot():
 
 
 def hierarchy():
-    adb("shell", "uiautomator", "dump", "/sdcard/homecar-smoke.xml")
-    return adb("exec-out", "cat", "/sdcard/homecar-smoke.xml")
+    # UIAutomator can return success before producing a hierarchy during initial
+    # window transitions. Use a fresh name and validate the dump before reading it.
+    deadline = time.monotonic() + 35
+    last_error = "No UI hierarchy returned"
+    while time.monotonic() < deadline:
+        remote = "/sdcard/homecar-smoke-" + str(time.monotonic_ns()) + ".xml"
+        status = adb("shell", "uiautomator", "dump", remote)
+        xml = adb("exec-out", "cat", remote, check=False)
+        try:
+            root = ET.fromstring(xml)
+            if root.tag != "hierarchy":
+                raise ValueError("Unexpected UI hierarchy root")
+            return xml
+        except (ET.ParseError, ValueError) as error:
+            last_error = str(error) + ": " + status.strip()
+            time.sleep(1)
+    raise RuntimeError("UIAutomator did not provide valid XML: " + last_error)
 
 
 def find_id(xml, resource_id):
@@ -80,6 +95,15 @@ def check_mode(destination, name, night_mode, font_scale):
     adb("shell", "settings", "put", "system", "font_scale", font_scale)
     launch = adb("shell", "am", "start", "-W", "-n", ACTIVITY)
     (destination / (name + "-launch.txt")).write_text(launch, encoding="utf-8")
+    # An unconfigured installation should open native setup, not a placeholder
+    # website error. Close it once to also exercise the persistent gear control.
+    xml, _ = wait_for_id("homeCarServerInput")
+    capture(destination, name + "-first-launch", xml)
+    close_button = find_id(xml, "homeCarCloseSettings")
+    if close_button is None:
+        raise RuntimeError("First-run settings have no close action")
+    left, top, right, bottom = bounds(close_button)
+    adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
     xml, button = wait_for_id("homeCarSettingsButton")
     capture(destination, name + "-dashboard", xml)
     left, top, right, bottom = bounds(button)

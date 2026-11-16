@@ -55,6 +55,7 @@ public class WebBrowserFragment extends MainActivityFragment
 		implements OverlayMenu.SelectionHandler, MainActivityListener {
 
 	private boolean fullScreenOnResume;
+	private boolean firstRunSetupShown;
 	private static final String HOMECAR_WEB_STATE = "homecar.webview.state";
 	@Nullable private View retainedHomeCarRoot;
 	@Nullable private HomeCarSettingsSheet settingsSheet;
@@ -154,12 +155,16 @@ public class WebBrowserFragment extends MainActivityFragment
 			addon.getPreferenceStore().addBroadcastListener(webView);
 		} else {
 			webView.init(addon, webClient, chromeClient);
+			boolean needsSetup = BuildConfig.AUTO && !addon.hasConfiguredHomeUrl();
 			boolean restored = false;
-			if (savedInstanceState != null) {
+			if (!needsSetup && savedInstanceState != null) {
 				Bundle state = savedInstanceState.getBundle(HOMECAR_WEB_STATE);
 				if (state != null) restored = webView.restoreState(state) != null;
 			}
-			if (restored) {
+			if (needsSetup) {
+				// The example address is a placeholder, not a dashboard to request.
+				webView.loadUrl("about:blank");
+			} else if (restored) {
 				// Android restoreState restores history, not rendered DOM content.
 				// An actual WebView reconstruction necessarily reconnects HA.
 				webView.reload();
@@ -252,15 +257,24 @@ public class WebBrowserFragment extends MainActivityFragment
 	}
 
 	private void showHomeCarSettings() {
+        showHomeCarSettings(false);
+    }
+
+    private void showHomeCarSettings(boolean initialSetup) {
         WebBrowserAddon addon = getAddon();
         FermataWebView webView = getWebView();
         if (addon == null || webView == null || !isAdded()) return;
+        if (initialSetup && (!BuildConfig.AUTO || firstRunSetupShown || !isResumed()
+                || addon.hasConfiguredHomeUrl())) return;
         // Guard at the action boundary as well as hiding the entry point in the car.
         MainActivityDelegate.getActivityDelegate(requireContext()).onSuccess(delegate -> {
             if (!isAdded() || getWebView() != webView || delegate.isCarActivityNotMirror()
                     || !(delegate.getAppActivity() instanceof Activity phoneActivity)) return;
+            if (initialSetup && (firstRunSetupShown || !isResumed()
+                    || addon.hasConfiguredHomeUrl())) return;
             if (settingsSheet != null && settingsSheet.isShowing()) return;
-            settingsSheet = new HomeCarSettingsSheet(phoneActivity, addon.getHomeUrl(), webView.getUrl(),
+            String serverUrl = addon.hasConfiguredHomeUrl() ? addon.getHomeUrl() : "";
+            settingsSheet = new HomeCarSettingsSheet(phoneActivity, serverUrl, webView.getUrl(),
                     url -> {
                         if (!isAdded() || getWebView() != webView) return;
                         addon.setHomeUrl(url);
@@ -269,6 +283,7 @@ public class WebBrowserFragment extends MainActivityFragment
                         if (isAdded() && getWebView() == webView) webView.reload();
                     });
             settingsSheet.show();
+            if (settingsSheet.isShowing()) firstRunSetupShown = true;
         });
     }
 
@@ -363,7 +378,12 @@ public class WebBrowserFragment extends MainActivityFragment
 		if (BuildConfig.AUTO) {
 			MainActivityDelegate
 					.getActivityDelegate(requireContext())
-					.onSuccess(a -> enforceHomeCarUi(a, true));
+					.onSuccess(a -> {
+						enforceHomeCarUi(a, true);
+						if (!a.isCarActivityNotMirror()) {
+							a.post(() -> showHomeCarSettings(true));
+						}
+					});
 		}
 	}
 

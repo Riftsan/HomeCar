@@ -8,6 +8,7 @@ The implementation retains the Java/XML architecture. Material Components for Vi
 
 - Tonal surfaces, restrained teal accents, rounded cards, and semantic text/icon states in both themes.
 - Native outlined text field, Material buttons, and Android's own certificate picker.
+- Unconfigured phone installations open native setup with an empty address field, without requesting a placeholder website. Configured dashboard sessions retain the existing lifecycle.
 - Phone controls have at least 48dp touch targets. Layouts scroll and use scalable text; status is conveyed in words as well as color.
 - Certificate setup stays on the phone. The car retains minimal navigation and the existing dashboard/session behavior.
 - A valid local certificate is described as ready for use, not proof that the server accepted the connection.

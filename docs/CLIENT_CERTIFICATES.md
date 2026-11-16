@@ -5,7 +5,7 @@ HomeCar can use an Android-installed client certificate to reach a Home Assistan
 ## Phone setup
 
 1. Install the certificate bundle supplied by the server administrator through Android's certificate installation settings. Choose the **VPN and apps** credential type if Android offers a choice. Keep its password and private key private.
-2. Open HomeCar on the phone and open **HomeCar settings**.
+2. Open HomeCar on the phone. A new installation opens **HomeCar settings** automatically; use the settings button to return later.
 3. Enter the full HTTPS server address, for example `https://home.example.com/`.
 4. Choose the client certificate using Android's system picker. Review the selected alias and expiry date in HomeCar.
 5. Save and open the dashboard, then sign in to Home Assistant.

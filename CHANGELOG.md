@@ -5,6 +5,7 @@
 - Added explicit Android KeyChain certificate selection, status/expiry, replacement and forgetting. Choices are bound to the exact HTTPS hostname and port; private keys stay under Android KeyChain control.
 - Added asynchronous credential checks, client-auth constraints, stale callback protection, and retry after changing certificate choices. Server TLS validation remains enforced.
 - Replaced the phone's basic settings dialog with native Material 3 controls, system light/dark appearance, a scrollable form, accessible touch targets, and validated server URLs.
+- Opened native setup on an unconfigured phone instead of loading a placeholder webpage.
 - Preserved dashboard paths and query strings during URL normalization. Home Assistant cookies and retained WebView behavior remain in place.
 - Pointed release checks to this fork, with English Material dialogs for manual checks and quiet background checks.
 - Removed deterministic signing-key generation. Release APKs use a private persistent signing identity outside the repository; device-bound certificate preferences are excluded from backups.

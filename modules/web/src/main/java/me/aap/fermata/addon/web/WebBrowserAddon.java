@@ -346,6 +346,11 @@ public class WebBrowserAddon implements FermataFragmentAddon, SharedPreferenceSt
 	/**
 	 * HOME CAR server configured by the user.
 	 */
+	boolean hasConfiguredHomeUrl() {
+		return getPreferenceStore().hasPref(HOME_URL, false)
+				&& !DEFAULT_HOME_URL.equals(getHomeUrl());
+	}
+
 	String getHomeUrl() {
 		String url = getPreferenceStore().getStringPref(HOME_URL);
 		return normalizeHomeUrl(url);
