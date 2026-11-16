@@ -99,7 +99,7 @@ The project retains Fermata-derived Android Auto projection infrastructure. A **
 
 ## Reporting problems
 
-Use [GitHub Issues](https://github.com/RenanEspinar/HomeCar/issues). Please include your phone model, Android version, Android Auto version, head unit/vehicle, APK version, installer, and precise reproduction steps. Remove Home Assistant URLs, session tokens, credentials, personal details and logs containing private data before posting.
+Use this fork's [GitHub Issues](https://github.com/Riftsan/HomeCar/issues). Please include your phone model, Android version, Android Auto version, head unit/vehicle, APK version, installer, and precise reproduction steps. Remove Home Assistant URLs, session tokens, credentials, personal details and logs containing private data before posting.
 
 Known investigations: [#1 Security](https://github.com/RenanEspinar/HomeCar/issues/1), [#6 WebView reload](https://github.com/RenanEspinar/HomeCar/issues/6), [#7 Rotary controls](https://github.com/RenanEspinar/HomeCar/issues/7), [#9 Launcher visibility](https://github.com/RenanEspinar/HomeCar/issues/9), [#12 mTLS](https://github.com/RenanEspinar/HomeCar/issues/12), [#14 Fermata coexistence](https://github.com/RenanEspinar/HomeCar/issues/14), [#15 Back button](https://github.com/RenanEspinar/HomeCar/issues/15).
 

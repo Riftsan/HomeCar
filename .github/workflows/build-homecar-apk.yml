@@ -162,8 +162,12 @@ jobs:
         run: |
           set -euo pipefail
           # Use the hosted runner's accepted SDK licenses; never answer a new license prompt.
-          timeout 300 sdkmanager "emulator" "system-images;android-36;google_apis;x86_64" < /dev/null
-          printf 'no\n' | avdmanager create avd --name HomeCarSmoke --package "system-images;android-36;google_apis;x86_64" --device pixel_6
+          SDK_TOOLS="$ANDROID_HOME/cmdline-tools/latest/bin"
+          test -x "$SDK_TOOLS/sdkmanager"
+          test -x "$ANDROID_HOME/platform-tools/adb"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          timeout 300 "$SDK_TOOLS/sdkmanager" "emulator" "system-images;android-36;google_apis;x86_64" < /dev/null
+          printf 'no\n' | "$SDK_TOOLS/avdmanager" create avd --name HomeCarSmoke --package "system-images;android-36;google_apis;x86_64" --device pixel_6
           test -e /dev/kvm
           sudo setfacl -m "u:$(id -un):rw" /dev/kvm
           mkdir -p smoke-artifacts
