@@ -90,3 +90,46 @@ jobs:
             fermata/build/reports/
             modules/web/build/reports/
           if-no-files-found: ignore
+
+  emulator-smoke:
+    needs: android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: HomeCar-release-build
+          path: dist/
+
+      - name: Prepare disposable Android emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Use the hosted runner's accepted SDK licenses; never answer a new license prompt.
+          timeout 300 sdkmanager "emulator" "system-images;android-36;google_apis;x86_64" < /dev/null
+          printf 'no\n' | avdmanager create avd --name HomeCarSmoke --package "system-images;android-36;google_apis;x86_64" --device pixel_6
+          test -e /dev/kvm
+          sudo setfacl -m "u:$(id -un):rw" /dev/kvm
+          mkdir -p smoke-artifacts
+          "$ANDROID_HOME/emulator/emulator" -avd HomeCarSmoke -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -accel on -camera-back none -camera-front none > smoke-artifacts/emulator.log 2>&1 &
+
+      - name: Verify release settings in light, dark, and large-font modes
+        run: python3 scripts/emulator-smoke.py dist/HomeCar-intermediate.apk
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: HomeCar-emulator-smoke
+          path: smoke-artifacts/
+          if-no-files-found: ignore
+
+      - name: Stop emulator
+        if: always()
+        run: adb -e emu kill || true

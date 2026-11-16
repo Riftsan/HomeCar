@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -58,6 +59,7 @@ final class HomeCarSettingsSheet {
     private boolean choosing;
     private boolean opening;
     @Nullable private Runnable pendingInspection;
+    @Nullable private AlertDialog forgetConfirmation;
 
     HomeCarSettingsSheet(Activity activity, String savedUrl, @Nullable String currentUrl,
                          Consumer<String> openServer, Runnable reload) {
@@ -121,6 +123,7 @@ final class HomeCarSettingsSheet {
         dialog.setOnDismissListener(ignored -> {
             requestGeneration++;
             if (pendingInspection != null) content.removeCallbacks(pendingInspection);
+            if (forgetConfirmation != null) forgetConfirmation.dismiss();
         });
         dialog.setOnShowListener(ignored -> {
             BottomSheetBehavior<?> behavior = dialog.getBehavior();
@@ -214,6 +217,7 @@ final class HomeCarSettingsSheet {
                 R.string.home_car_certificate_expires,
                 DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date(result.expiresAtMillis))));
         forgetCertificate.setVisibility(selected ? View.VISIBLE : View.GONE);
+        forgetCertificate.setEnabled(!choosing);
         chooseCertificate.setText(selected ? R.string.home_car_certificate_change
                 : R.string.home_car_certificate_choose);
         chooseCertificate.setEnabled(!choosing);
@@ -265,10 +269,16 @@ final class HomeCarSettingsSheet {
             if (result.state == ClientCertificateManager.State.CANCELLED) {
                 showNotice(R.string.home_car_certificate_cancelled);
                 inspectCertificate();
-            } else {
+            } else if (result.state == ClientCertificateManager.State.READY) {
                 renderCertificate(result);
-                if (result.state == ClientCertificateManager.State.READY)
-                    showNotice(R.string.home_car_certificate_selection_saved);
+                showNotice(R.string.home_car_certificate_selection_saved);
+            } else {
+                // A rejected candidate never replaces the persisted selection. Re-read that choice
+                // instead of displaying the attempted alias as the identity that will be used.
+                showNotice(result.state == ClientCertificateManager.State.EXPIRED
+                        ? R.string.home_car_certificate_rejected_expired
+                        : R.string.home_car_certificate_rejected_unavailable);
+                inspectCertificate();
             }
         });
     }
@@ -276,13 +286,16 @@ final class HomeCarSettingsSheet {
     private void forgetCertificate() {
         String url = serverUrl(true);
         if (url == null || choosing || !active()) return;
-        new MaterialAlertDialogBuilder(context)
+        if (forgetConfirmation != null && forgetConfirmation.isShowing()) return;
+        forgetConfirmation = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.home_car_certificate_forget_title)
                 .setMessage(R.string.home_car_certificate_forget_message)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.home_car_certificate_forget, (ignored, which) -> {
                     if (active() && Objects.equals(url, serverUrl(false))) forgetSelection(url);
-                }).show();
+                }).create();
+        forgetConfirmation.setOnDismissListener(ignored -> forgetConfirmation = null);
+        forgetConfirmation.show();
     }
 
     private void forgetSelection(String url) {

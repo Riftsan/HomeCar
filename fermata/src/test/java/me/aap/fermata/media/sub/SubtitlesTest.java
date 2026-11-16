@@ -9,11 +9,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import me.aap.utils.concurrent.HandlerExecutor;
 import me.aap.utils.function.BiConsumer;
@@ -106,7 +103,7 @@ Multi line
 		assertEquals("BOTTOM_CENTER\nMulti line", s.getText());
 	}
 
-	@Test
+	@Test(timeout = 5000)
 	public void testScheduler() throws Exception {
 		StringBuilder sb = new StringBuilder();
 		IntConsumer itos = i -> {
@@ -137,47 +134,82 @@ Multi line
 		}
 
 		var sg = FileSubtitles.load(new ByteArrayInputStream(sb.toString().getBytes()));
-		var exec = new HandlerExecutor() {
-			final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
-			@Override
-			public synchronized Cancellable schedule(@NonNull Runnable task, long delay) {
-				var f = scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);
-				return new Cancellable() {
-					@Override
-					public boolean cancel() {
-						return f.cancel(false);
-					}
-				};
-			}
-		};
-		Semaphore sem = new Semaphore(0);
+		var exec = new VirtualTimeExecutor();
 		BiConsumer<SubGrid.Position, Subtitles.Text> consumer = (p, t) -> {
 			if (t == null) return;
 			received.add(t.getText());
-			if (expect.size() == received.size()) sem.release();
 		};
-		SubScheduler sched = new SubScheduler(exec, sg, consumer);
+		SubScheduler sched = new SubScheduler(exec, sg, consumer, exec::now);
 		sched.start(0, 0, 1);
-		sem.acquire();
+		exec.runUntilIdle();
 		assertArrayEquals(expect.toArray(), received.toArray());
 
 		sched.stop(false);
 		received.clear();
 		sched.start(0, 10, 1);
-		sem.acquire();
+		exec.runUntilIdle();
 		assertArrayEquals(expect.toArray(), received.toArray());
 
 		sched.stop(false);
 		received.clear();
 		sched.start(0, 10, 2);
-		sem.acquire();
+		exec.runUntilIdle();
 		assertArrayEquals(expect.toArray(), received.toArray());
 
 		sched.stop(false);
 		received.clear();
 		sched.start(0, 10, 0.5f);
-		sem.acquire();
+		exec.runUntilIdle();
 		assertArrayEquals(expect.toArray(), received.toArray());
+	}
+
+	/** Uses HandlerExecutor's pending-task cancellation semantics without real-time races. */
+	private static final class VirtualTimeExecutor extends HandlerExecutor {
+		private final PriorityQueue<ScheduledTask> queue = new PriorityQueue<>((a, b) -> {
+			int comparison = Long.compare(a.when, b.when);
+			return comparison != 0 ? comparison : Long.compare(a.sequence, b.sequence);
+		});
+		private long now;
+		private long sequence;
+
+		long now() { return now; }
+
+		@Override
+		public Cancellable schedule(@NonNull Runnable task, long delay) {
+			var scheduled = new ScheduledTask(task, now + Math.max(0, delay), sequence++);
+			queue.add(scheduled);
+			return scheduled;
+		}
+
+		void runUntilIdle() {
+			for (int count = 0; !queue.isEmpty(); count++) {
+				if (count >= 10000) fail("Subtitle scheduler did not become idle");
+				var scheduled = queue.remove();
+				if (!scheduled.pending) continue;
+				now = scheduled.when;
+				scheduled.pending = false;
+				scheduled.task.run();
+			}
+		}
+
+		private static final class ScheduledTask implements Cancellable {
+			final Runnable task;
+			final long when;
+			final long sequence;
+			boolean pending = true;
+
+			ScheduledTask(Runnable task, long when, long sequence) {
+				this.task = task;
+				this.when = when;
+				this.sequence = sequence;
+			}
+
+			@Override
+			public boolean cancel() {
+				if (!pending) return false;
+				pending = false;
+				return true;
+			}
+		}
 	}
 }

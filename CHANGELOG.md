@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0-rc.1] — Fork prerelease (2026-11-16)
+
+- Added explicit Android KeyChain certificate selection, status/expiry, replacement and forgetting. Choices are bound to the exact HTTPS hostname and port; private keys stay under Android KeyChain control.
+- Added asynchronous credential checks, client-auth constraints, stale callback protection, and retry after changing certificate choices. Server TLS validation remains enforced.
+- Replaced the phone's basic settings dialog with native Material 3 controls, system light/dark appearance, a scrollable form, accessible touch targets, and validated server URLs.
+- Preserved dashboard paths and query strings during URL normalization. Home Assistant cookies and retained WebView behavior remain in place.
+- Pointed release checks to this fork, with English Material dialogs for manual checks and quiet background checks.
+- Removed deterministic signing-key generation. Release APKs use a private persistent signing identity outside the repository; device-bound certificate preferences are excluded from backups.
+- Added 23 JVM security tests and a release build pipeline with unit tests and Android Lint.
+
+The release remains a candidate until actual phone/mobile-data and head-unit checks pass. See [certificate setup](docs/CLIENT_CERTIFICATES.md), [design notes](docs/DESIGN.md), and [build/signing](docs/RELEASE_BUILD.md). Upstream history follows.
+
 ## [1.0.0-rc.2] — Pre-release candidate (2026-10-31)
 
 **Source/build:** RC2 modifications and local validation, including successful `:fermata:bundleAutoDebug` and Bundletool-generated universal APK. Signed with the developer machine's **debug key**, not a long-term release key.

@@ -45,3 +45,10 @@ bundletool.jar
 HomeCarUniversal/
 local.properties
 gradle/gradle-daemon-jvm.properties
+
+# Private signing and client-certificate bundles
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.dpapi

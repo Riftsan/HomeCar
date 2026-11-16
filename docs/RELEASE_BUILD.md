@@ -8,6 +8,8 @@ The fork builds version `1.1.0-rc.1`, version code `272`, package `com.renanespi
 
 The intermediate APK has a temporary transport signature. It is **not** the installation artifact. Release signing happens on the owner's workstation with `scripts/Sign-HomeCar.ps1`; no private signing material is sent to GitHub Actions.
 
+A dependent emulator job installs that release-mode universal APK on a disposable Android API 36 emulator. It opens settings in light, dark, and 150% font modes, checks that actions remain reachable, captures screenshots, and fails on app crashes. This tests native layout inflation and packaging. It does not install the app on the owner's phone or exercise a real client certificate.
+
 ## Private signing identity
 
 The helper stores the encrypted PKCS12 keystore outside the repository under `%LOCALAPPDATA%\HomeCarBuild\signing`. Its random password is protected by Windows DPAPI for the current user. The directory permits only that user and SYSTEM. The helper refuses to overwrite an existing identity or output APK.

@@ -75,6 +75,8 @@
     <string name="home_car_certificate_forgotten">Selection forgotten for this server. The certificate stays installed on your phone.</string>
     <string name="home_car_certificate_cancelled">Selection cancelled. Your previous choice is unchanged.</string>
     <string name="home_car_certificate_selection_saved">Certificate selection saved for this server.</string>
+    <string name="home_car_certificate_rejected_expired">That certificate is expired or not yet valid. Your previous selection is unchanged.</string>
+    <string name="home_car_certificate_rejected_unavailable">That certificate cannot be used for client authentication. Your previous selection is unchanged.</string>
     <string name="home_car_reload_dashboard">Reload current dashboard</string>
     <string name="home_car_version">HomeCar %1$s</string>
     <string name="home_car_update_title">HomeCar updates</string>
