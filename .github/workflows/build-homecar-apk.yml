@@ -40,8 +40,9 @@ jobs:
           ./gradlew :fermata:testAutoDebugUnitTest :web:testAutoDebugUnitTest --no-daemon
 
       - name: Android Lint
+        timeout-minutes: 15
         # The base app's lint task also analyzes and reports dynamic-feature issues.
-        run: ./gradlew :fermata:lintAutoRelease --no-daemon
+        run: bash scripts/run-android-lint.sh
 
       - name: Build unsigned Android Auto release bundle
         run: ./gradlew :fermata:bundleAutoRelease --no-daemon
@@ -92,6 +93,13 @@ jobs:
             fermata/build/test-results/
             modules/web/build/reports/
             modules/web/build/test-results/
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: HomeCar-build-diagnostics
+          path: build-diagnostics/
           if-no-files-found: ignore
 
   emulator-smoke:
