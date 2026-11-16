@@ -1,5 +1,6 @@
 package me.aap.fermata.security;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -174,6 +175,9 @@ public final class ClientCertificateManager {
 		});
 	}
 
+	// ClientCertRequest.getKeyTypes() lacks KeyChain's StringDef annotation, but supplies
+	// the same RSA/EC names. Preserve its filter; load() also validates the selected key.
+	@SuppressLint("WrongConstant")
 	private static void choose(Activity activity, ClientCertificateOrigin origin,
 			String[] keyTypes, Principal[] issuers, MaterialCallback callback) {
 		if (activity.isFinishing() || activity.isDestroyed()) {

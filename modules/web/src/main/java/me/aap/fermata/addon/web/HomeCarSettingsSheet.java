@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
@@ -68,8 +67,8 @@ final class HomeCarSettingsSheet {
         this.openServer = openServer;
         this.reload = reload;
         dialog = new BottomSheetDialog(context, R.style.ThemeOverlay_HomeCar_BottomSheet);
-        content = LayoutInflater.from(dialog.getContext()).inflate(R.layout.home_car_settings_sheet, null);
-        dialog.setContentView(content);
+        dialog.setContentView(R.layout.home_car_settings_sheet);
+        content = dialog.findViewById(R.id.homeCarSettingsScroll);
         serverLayout = content.findViewById(R.id.homeCarServerInputLayout);
         serverInput = content.findViewById(R.id.homeCarServerInput);
         certificateStatus = content.findViewById(R.id.homeCarCertificateStatus);

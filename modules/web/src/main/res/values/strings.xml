@@ -31,62 +31,62 @@
     <string name="sponsorblock_cat_filler">Filler</string>
     <string name="sponsorblock_cat_filler_sub">Aggressive category; disabled by default.</string>
 
-    <!-- HOME CAR -->
-    <string name="home_car_check_updates">Check for updates</string>
-    <string name="home_car_back_or_exit">Back or exit HomeCar</string>
-    <string name="home_car_server_settings">HomeCar server settings</string>
-    <string name="home_car_server_title">Home Assistant server</string>
-    <string name="home_car_server_message">Enter the address HomeCar should open. You can use a domain or a local IP address.</string>
-    <string name="home_car_server_save">Save &amp; open dashboard</string>
-    <string name="home_car_server_reset">Reset</string>
-    <string name="home_car_server_required">Enter a server address</string>
-    <string name="home_car_server_saved">Server saved</string>
-    <string name="home_car_server_reset_done">Default server restored</string>
-    <string name="home_car_settings_title">HomeCar</string>
-    <string name="home_car_settings_subtitle">Your home, ready for the road.</string>
-    <string name="home_car_close_settings">Close settings</string>
-    <string name="home_car_dashboard_not_open">No dashboard open</string>
-    <string name="home_car_current_dashboard">Current dashboard: %1$s</string>
-    <string name="home_car_server_address">Server address</string>
-    <string name="home_car_server_hint">Enter the full address, starting with https:// or http://.</string>
-    <string name="home_car_server_invalid">Enter a valid HTTP or HTTPS server address without a username or password.</string>
-    <string name="home_car_certificate_title">Client certificate</string>
-    <string name="home_car_certificate_checking">Checking certificate…</string>
-    <string name="home_car_certificate_enter_server">Enter a server address first</string>
-    <string name="home_car_certificate_https_only">HTTPS required for certificates</string>
-    <string name="home_car_certificate_http_notice">This address uses unencrypted HTTP. Use HTTPS to protect your connection and use a client certificate.</string>
-    <string name="home_car_certificate_none">No certificate selected</string>
-    <string name="home_car_certificate_optional">Optional. If your server requires a client certificate, select one already installed on this phone.</string>
-    <string name="home_car_certificate_ready">Certificate ready</string>
-    <string name="home_car_certificate_ready_description">HomeCar can use this certificate when this server requests it. Open the dashboard to check the connection.</string>
-    <string name="home_car_certificate_expired">Certificate expired or not yet valid</string>
-    <string name="home_car_certificate_expired_description">Choose a valid certificate before connecting to a server that requires one.</string>
-    <string name="home_car_certificate_unavailable">Certificate unavailable</string>
-    <string name="home_car_certificate_unavailable_description">The certificate may have been removed, or access was revoked. Choose a certificate again.</string>
-    <string name="home_car_certificate_origin">Only for %1$s</string>
-    <string name="home_car_certificate_expires">Expires %1$s</string>
-    <string name="home_car_certificate_expires_soon">Certificate expires soon</string>
-    <string name="home_car_certificate_renew_description">This certificate expires within 30 days. Install and select its replacement before it expires.</string>
-    <string name="home_car_certificate_choose">Choose installed certificate</string>
-    <string name="home_car_certificate_change">Change certificate</string>
-    <string name="home_car_certificate_forget">Forget selection</string>
-    <string name="home_car_certificate_forget_title">Forget this selection?</string>
-    <string name="home_car_certificate_forget_message">HomeCar will stop using this certificate for this server. The certificate stays installed on your phone.</string>
-    <string name="home_car_certificate_forgotten">Selection forgotten for this server. The certificate stays installed on your phone.</string>
-    <string name="home_car_certificate_cancelled">Selection cancelled. Your previous choice is unchanged.</string>
-    <string name="home_car_certificate_selection_saved">Certificate selection saved for this server.</string>
-    <string name="home_car_certificate_rejected_expired">That certificate is expired or not yet valid. Your previous selection is unchanged.</string>
-    <string name="home_car_certificate_rejected_unavailable">That certificate cannot be used for client authentication. Your previous selection is unchanged.</string>
-    <string name="home_car_reload_dashboard">Reload current dashboard</string>
-    <string name="home_car_version">HomeCar %1$s</string>
-    <string name="home_car_update_title">HomeCar updates</string>
-    <string name="home_car_update_checking">Checking for updates…</string>
-    <string name="home_car_update_failed">Could not check GitHub (%1$s). Please try again later.</string>
-    <string name="home_car_update_no_releases">No versions have been published for this fork yet.</string>
-    <string name="home_car_update_current">You are up to date</string>
-    <string name="home_car_update_versions">Installed: %1$s\nLatest release: %2$s</string>
-    <string name="home_car_update_available">Update available</string>
-    <string name="home_car_update_message">Installed: %1$s\nAvailable: %2$s\n\nReview the release on GitHub before downloading. HomeCar will not install updates automatically.</string>
-    <string name="home_car_update_open">View release</string>
-    <string name="home_car_update_no_browser">No browser is available to open GitHub.</string>
+    <!-- HomeCar setup and update UI intentionally uses English. -->
+    <string name="home_car_check_updates" translatable="false">Check for updates</string>
+    <string name="home_car_back_or_exit" translatable="false">Back or exit HomeCar</string>
+    <string name="home_car_server_settings" translatable="false">HomeCar server settings</string>
+    <string name="home_car_server_title" translatable="false">Home Assistant server</string>
+    <string name="home_car_server_message" translatable="false">Enter the address HomeCar should open. You can use a domain or a local IP address.</string>
+    <string name="home_car_server_save" translatable="false">Save &amp; open dashboard</string>
+    <string name="home_car_server_reset" translatable="false">Reset</string>
+    <string name="home_car_server_required" translatable="false">Enter a server address</string>
+    <string name="home_car_server_saved" translatable="false">Server saved</string>
+    <string name="home_car_server_reset_done" translatable="false">Default server restored</string>
+    <string name="home_car_settings_title" translatable="false">HomeCar</string>
+    <string name="home_car_settings_subtitle" translatable="false">Your home, ready for the road.</string>
+    <string name="home_car_close_settings" translatable="false">Close settings</string>
+    <string name="home_car_dashboard_not_open" translatable="false">No dashboard open</string>
+    <string name="home_car_current_dashboard" translatable="false">Current dashboard: %1$s</string>
+    <string name="home_car_server_address" translatable="false">Server address</string>
+    <string name="home_car_server_hint" translatable="false">Enter the full address, starting with https:// or http://.</string>
+    <string name="home_car_server_invalid" translatable="false">Enter a valid HTTP or HTTPS server address without a username or password.</string>
+    <string name="home_car_certificate_title" translatable="false">Client certificate</string>
+    <string name="home_car_certificate_checking" translatable="false">Checking certificate…</string>
+    <string name="home_car_certificate_enter_server" translatable="false">Enter a server address first</string>
+    <string name="home_car_certificate_https_only" translatable="false">HTTPS required for certificates</string>
+    <string name="home_car_certificate_http_notice" translatable="false">This address uses unencrypted HTTP. Use HTTPS to protect your connection and use a client certificate.</string>
+    <string name="home_car_certificate_none" translatable="false">No certificate selected</string>
+    <string name="home_car_certificate_optional" translatable="false">Optional. If your server requires a client certificate, select one already installed on this phone.</string>
+    <string name="home_car_certificate_ready" translatable="false">Certificate ready</string>
+    <string name="home_car_certificate_ready_description" translatable="false">HomeCar can use this certificate when this server requests it. Open the dashboard to check the connection.</string>
+    <string name="home_car_certificate_expired" translatable="false">Certificate expired or not yet valid</string>
+    <string name="home_car_certificate_expired_description" translatable="false">Choose a valid certificate before connecting to a server that requires one.</string>
+    <string name="home_car_certificate_unavailable" translatable="false">Certificate unavailable</string>
+    <string name="home_car_certificate_unavailable_description" translatable="false">The certificate may have been removed, or access was revoked. Choose a certificate again.</string>
+    <string name="home_car_certificate_origin" translatable="false">Only for %1$s</string>
+    <string name="home_car_certificate_expires" translatable="false">Expires %1$s</string>
+    <string name="home_car_certificate_expires_soon" translatable="false">Certificate expires soon</string>
+    <string name="home_car_certificate_renew_description" translatable="false">This certificate expires within 30 days. Install and select its replacement before it expires.</string>
+    <string name="home_car_certificate_choose" translatable="false">Choose installed certificate</string>
+    <string name="home_car_certificate_change" translatable="false">Change certificate</string>
+    <string name="home_car_certificate_forget" translatable="false">Forget selection</string>
+    <string name="home_car_certificate_forget_title" translatable="false">Forget this selection?</string>
+    <string name="home_car_certificate_forget_message" translatable="false">HomeCar will stop using this certificate for this server. The certificate stays installed on your phone.</string>
+    <string name="home_car_certificate_forgotten" translatable="false">Selection forgotten for this server. The certificate stays installed on your phone.</string>
+    <string name="home_car_certificate_cancelled" translatable="false">Selection cancelled. Your previous choice is unchanged.</string>
+    <string name="home_car_certificate_selection_saved" translatable="false">Certificate selection saved for this server.</string>
+    <string name="home_car_certificate_rejected_expired" translatable="false">That certificate is expired or not yet valid. Your previous selection is unchanged.</string>
+    <string name="home_car_certificate_rejected_unavailable" translatable="false">That certificate cannot be used for client authentication. Your previous selection is unchanged.</string>
+    <string name="home_car_reload_dashboard" translatable="false">Reload current dashboard</string>
+    <string name="home_car_version" translatable="false">HomeCar %1$s</string>
+    <string name="home_car_update_title" translatable="false">HomeCar updates</string>
+    <string name="home_car_update_checking" translatable="false">Checking for updates…</string>
+    <string name="home_car_update_failed" translatable="false">Could not check GitHub (%1$s). Please try again later.</string>
+    <string name="home_car_update_no_releases" translatable="false">No versions have been published for this fork yet.</string>
+    <string name="home_car_update_current" translatable="false">You are up to date</string>
+    <string name="home_car_update_versions" translatable="false">Installed: %1$s\nLatest release: %2$s</string>
+    <string name="home_car_update_available" translatable="false">Update available</string>
+    <string name="home_car_update_message" translatable="false">Installed: %1$s\nAvailable: %2$s\n\nReview the release on GitHub before downloading. HomeCar will not install updates automatically.</string>
+    <string name="home_car_update_open" translatable="false">View release</string>
+    <string name="home_car_update_no_browser" translatable="false">No browser is available to open GitHub.</string>
 </resources>

@@ -1,6 +1,11 @@
 if (gradle.ext.enableGoogleServices) apply plugin: 'com.google.gms.google-services'
 
 android {
+    lint {
+        // Verified upstream debt only; new HomeCar issues remain enforced.
+        baseline = file('lint-baseline.xml')
+    }
+
     defaultConfig {
         namespace = 'me.aap.fermata'
         applicationId project.getProperties().getOrDefault('APP_ID', 'com.renanespinar.homecar')
@@ -72,10 +77,6 @@ android {
             buildConfigField "boolean", 'AUTO', 'true'
             buildConfigField "boolean", 'ENABLE_GS', "${gradle.ext.enableGoogleServices}"
 
-            dependencies {
-                implementation files('lib/auto/aauto.aar')
-                compileOnly files('lib/auto/xposed-api-82.jar')
-            }
         }
     }
 
@@ -120,4 +121,6 @@ dependencies {
     implementation libs.firebaseEncoders
     implementation libs.javaxInject
     autoImplementation libs.androidxCarApp
+    autoImplementation files('lib/auto/aauto.aar')
+    autoCompileOnly files('lib/auto/xposed-api-82.jar')
 }

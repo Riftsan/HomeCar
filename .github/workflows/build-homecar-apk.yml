@@ -60,12 +60,21 @@ jobs:
           java -jar /tmp/bundletool.jar dump manifest --bundle="$AAB" --module=web > /tmp/web-manifest.xml
           python3 -c 'import xml.etree.ElementTree as ET; root = ET.parse("/tmp/web-manifest.xml"); ns = "{http://schemas.android.com/apk/distribution}"; fusing = root.find(".//" + ns + "fusing"); assert fusing is not None and fusing.get(ns + "include") == "true", "The web feature must be fused into the universal APK"'
 
-          # Bundletool uses a temporary debug signature for transport only.
-          # The private persistent signing key stays on the owner's workstation.
+          # A fresh test key signs this transport/smoke-test artifact only.
+          # Neither temporary key material nor the owner's private release key is uploaded.
+          umask 077
+          CI_KEY_DIR="$(mktemp -d)"
+          openssl rand -base64 32 > "$CI_KEY_DIR/password"
+          keytool -genkeypair -alias homecar-ci -keyalg RSA -keysize 2048 \
+            -validity 2 -dname "CN=HomeCar CI Test" -storetype PKCS12 \
+            -keystore "$CI_KEY_DIR/test.p12" \
+            -storepass:file "$CI_KEY_DIR/password" -keypass:file "$CI_KEY_DIR/password"
           java -jar /tmp/bundletool.jar build-apks \
             --bundle="$AAB" \
             --output=/tmp/homecar.apks \
-            --mode=universal
+            --mode=universal \
+            --ks="$CI_KEY_DIR/test.p12" --ks-key-alias=homecar-ci \
+            --ks-pass="file:$CI_KEY_DIR/password" --key-pass="file:$CI_KEY_DIR/password"
 
           unzip -p /tmp/homecar.apks universal.apk > dist/HomeCar-intermediate.apk
           test -s dist/HomeCar-intermediate.apk

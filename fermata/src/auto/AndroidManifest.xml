@@ -141,6 +141,7 @@
 
         <service
             android:name="me.aap.fermata.media.service.FermataMediaService"
+            android:exported="false"
             tools:node="merge">
             <intent-filter tools:node="removeAll" />
         </service>

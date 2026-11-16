@@ -802,7 +802,7 @@
     </receiver>
     <receiver android:name=".media.lib.AtvUpdateReceiver" />
     <provider android:name="me.aap.fermata.provider.FermataContentProvider" android:authorities="${applicationId}" android:exported="true" android:grantUriPermissions="true" tools:ignore="ExportedContentProvider" />
-    <!-- Remove ML Kit provider from base APK -->
-    <provider android:name="com.google.mlkit.common.internal.MlKitInitProvider" android:authorities="${applicationId}.mlkitinitprovider" tools:node="remove" />
+    <!-- This merge-removal marker does not instantiate an ML Kit provider. -->
+    <provider android:name="com.google.mlkit.common.internal.MlKitInitProvider" android:authorities="${applicationId}.mlkitinitprovider" tools:node="remove" tools:ignore="MissingClass" />
   </application>
 </manifest>
